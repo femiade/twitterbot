@@ -3,7 +3,7 @@ import logging
 from config import consumer_key, consumer_token, access_secret, access_token_secret
 
 
-def lambda_handler(event, context):
+def run():
     """
     Gets user profiles and retrieves x most recent tweets from user.
     Check the tweet so see if it contains an image or a url -- if so retweet it
