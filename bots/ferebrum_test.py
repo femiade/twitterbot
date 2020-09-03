@@ -1,6 +1,14 @@
 import tweepy
+import logging
+# from config import consumer_key, consumer_secret, access_token, access_token_secret
 
-def lambda_handler(event, context):
+consumer_key = "jX85ExJrQmPYNIvNpLR9YDwz2"
+consumer_secret = "X6soUnOcsck2FX6p5e8cxpMLebf5ZK4Jw5pUkOHIJpySwYdkoy"
+access_token = "1283953081487699968-UM40wFGhGsCekHCDbkgqsoSj7FK5RG"
+access_token_secret = "gibgEJ8LKWbmIMKT91yyBOIcyroJmyJFDrsMUwX2msgAB"
+
+
+def run():
     """
     Gets user profiles and retrieves x most recent tweets from user.
     Check the tweet so see if it contains an image or a url -- if so retweet it
@@ -9,11 +17,9 @@ def lambda_handler(event, context):
     :param users:
     :return:
     """
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger()
 
-    consumer_key = ""
-    consumer_secret = ""
-    access_token = ""
-    access_token_secret = ""
 
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
@@ -22,9 +28,9 @@ def lambda_handler(event, context):
     try:
         api.verify_credentials()
     except Exception as e:
-        print("Error creating API")
+        logger.error("Error creating API", exc_info=True)
         raise e
-    print("API created")
+    logger.info("API created")
 
     users = ['archillect',
              'CyberpunkIsNow',
@@ -43,37 +49,39 @@ def lambda_handler(event, context):
              'interiorsofine'
              ]
 
-    # Validate that
+    # Validate that User account exist (Not suspended / Deactivated)
     valid_users = []
     for user in users:
         try:
             api.get_user(screen_name=user)
         except tweepy.TweepError as e:
             if 'User not found.' or 'User has been suspended.' in e:
-                print(e)
+
+                logger.error(e, exc_info=True)
             else:
                 break
         else:
             valid_users.append(user)
 
+
     try:
         for user in valid_users:
+            print(user)
             for tweet in tweepy.Cursor(api.user_timeline, user).items(1):
                 try:
                     if tweet.retweeted is False:
                         if tweet.entities['media'] is not None:
-                            print(f" Retweeting {tweet.text} from {user}.")
+                            logger.info(f" Retweeting {tweet.text} from {user}.")
                             api.retweet(tweet.id)
                 except KeyError as e:
-                    try:
-                        if (tweet.entities['urls'] is not None) and (tweet.in_reply_to_user_id is None):
-                            print(f" Retweeting {tweet.text} from {user}.")
-                            api.retweet(tweet.id)
-                    except KeyError as e:
-                        print(f' This tweet from {user} does not contain an image or url')
+                        try:
+                            if (tweet.entities['urls'] is not None) and (tweet.in_reply_to_user_id is None):
+                                logger.info(f" Retweeting {tweet.text} from {user}.")
+                                api.retweet(tweet.id)
+                        except KeyError as e:
+                                logger.error(f' This tweet from {user} does not contain an image or url', exc_info=True)
     except tweepy.TweepError as e:
-        print("Error on getting user information")
+        logger.error("Error on getting user information", exc_info=True)
 
 
-
-
+run()
