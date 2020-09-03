@@ -1,7 +1,7 @@
 #ignore aws and env files
 
-.gitignore
 bots/ferebrum_test.py.py
 bots/config.py
 bots/ferebrum_aws.py
 env
+__pycache__
