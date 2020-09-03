@@ -1,6 +1,6 @@
 #ignore aws and env files
 
-bots/ferebrum_test.py.py
+bots/ferebrum_test.py
 bots/config.py
 bots/ferebrum_aws.py
 env
